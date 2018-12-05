@@ -17,6 +17,14 @@
  * times).
  */
 
+/* Authors
+ * =======
+ * Ulysses Butler
+ * Robert Maskek
+ * Andrew Flynn
+ * Nestor Fong
+ */
+
 /*  Base case, since the string will not contain '+' or paran, 
     passing this means the Regular expression is, itself, just a
     string */
