@@ -26,15 +26,15 @@
  */
 
 /*  Base case, since the string will not contain '+' or paran, 
-    passing this means the Regular expression is, itself, just a
+    if this test is true, it means the regex itself is just a
     string */
 isDerivable(RegEx, Input) :- RegEx == Input.
 /*  It's nessesary to check notDerivable first to prevent infinite
     loops. If you can't derive Input from RegEx, these will all fail,
-    so will the call */
+    which is enough to make the whole functor false */
 isDerivable(RegEx, Input) :- not(notDerivable(RegEx, Input)), paran(RegEx, X), isDerivable(X, Input).
 /*  This is the base case for star. If star is valid, regardless of
-    the output,if the input is empty, the call passes. */
+    the output, if the input is empty, the call passes. */
 isDerivable(RegEx, Input) :- not(notDerivable(RegEx, Input)), star(RegEx, _), Input == ''.
 /*  atom_concat will basically brute force all combinations of 
     concats to make A and B. X is a valid regular expression such 
@@ -101,7 +101,9 @@ dis(X, Y, Z) :- atom_concat(A, Z, X), atom_concat(Y, '+', A).
 %letters next to each other
 /*  This will concatenate a letter or parans to another letter or 
     parans */
-cat(X, Y, Z) :- atom_concat(Y, Z, X), ((letter(A), atom_concat(_, A, Y)); atom_concat(_, ')', Y)), ((letter(B), atom_concat(B, _, Z)); atom_concat('(', _, Z)).
+    %cat(X, Y, Z) :- atom_concat(Y, Z, X), ((letter(A), atom_concat(_, A, Y)); atom_concat(_, ')', Y)), ((letter(B), atom_concat(B, _, Z)); atom_concat('(', _, Z)).
+
+cat(X, Y, Z) :- atom_concat(Y, Z, X), ((letter(A), atom_concat(_, A, Y)); atom_concat(_, ')', Y); atom_concat(_, '*', Y)), ((letter(B), atom_concat(B, _, Z)); atom_concat('(', _, Z)).
 
 %letters
 /* Base cases */
