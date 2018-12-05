@@ -101,8 +101,6 @@ dis(X, Y, Z) :- atom_concat(A, Z, X), atom_concat(Y, '+', A).
 %letters next to each other
 /*  This will concatenate a letter or parans to another letter or 
     parans */
-    %cat(X, Y, Z) :- atom_concat(Y, Z, X), ((letter(A), atom_concat(_, A, Y)); atom_concat(_, ')', Y)), ((letter(B), atom_concat(B, _, Z)); atom_concat('(', _, Z)).
-
 cat(X, Y, Z) :- atom_concat(Y, Z, X), ((letter(A), atom_concat(_, A, Y)); atom_concat(_, ')', Y); atom_concat(_, '*', Y)), ((letter(B), atom_concat(B, _, Z)); atom_concat('(', _, Z)).
 
 %letters
