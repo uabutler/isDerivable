@@ -9,7 +9,7 @@
  * As a precondition, it is assumed the regular expression is valid, 
  * and that both the string and the regular expression are defined 
  * only over the alphabet A = {a,b,c}. (Though this can be trivially 
- * modified below.
+ * modified below.)
  *
  * For this program, A + B represents the disjuntion of two regular
  * expression, A and B, AB is the concatenation of A and B, and A*
@@ -41,14 +41,12 @@ isDerivable(RegEx, Input) :-
 isDerivable(RegEx, Input) :-
   not(notDerivable(RegEx, Input)),
   star(RegEx, _), Input == ''.
-/*  atom_concat will basically brute force all combinations of 
-    concats to make A and B. X is a valid regular expression such 
-    that applying a star over it produces RegEx. You then test if you 
-    can derive A (the first half) from the version without the star, 
-    and send the version with the star back to is derivable. This 
-    will likely lead back to these two functors, which will either 
-    eventually fail if isDerivable(X, A) ever fails, or will get back 
-    to the back case. */
+/*  atom_concat will brute force combinations of strings to that can
+    concatenate to make Input. It will remove the star from the end
+    of RegEx if doing so is valid (applied over a letter or parans).
+    It will then test to see if the first part is derivable from the
+    part without the star, and sends the part with the star back
+    with the second half, until it gets to the base case. */
 isDerivable(RegEx, Input) :-
   not(notDerivable(RegEx, Input)),
   star(RegEx, X),
@@ -62,10 +60,12 @@ isDerivable(RegEx, Input) :-
   dis(RegEx, X, Y),
   (isDerivable(X, Input); isDerivable(Y, Input)).
 /*  This also involves a lot of brute forcing. If you can split the 
-    string and    the regular expression up into two concatenated parts 
+    string and the regular expression up into two concatenated parts 
     such that a part of a regular expression can derive its 
     respective part of the string, it passes. Not complicated, but 
-    very intensive on the part of the computer */
+    very intensive on the part of the computer. If the whole thing
+    is surrounded by parans, or is a disjuntion, it can't be a
+    disjunction. */
 isDerivable(RegEx, Input) :-
   not(notDerivable(RegEx, Input)),
   not(paran(RegEx, _)),
@@ -75,9 +75,7 @@ isDerivable(RegEx, Input) :-
   isDerivable(X, A),
   isDerivable(Y, B).
 
-/*  If the Regular expression gets down to a string concat will 
-    eventually bring it down to here where it will fail, and the
-    functor call will return false */
+/*  Base case for a failure */
 notDerivable(RegEx, Input) :-
   letter(RegEx),
   RegEx \= Input.
@@ -99,10 +97,24 @@ paran(X, Y) :-
     zero, we've passed a closing paran that wasn't opened, so we 
     return false. If we get to the end, and S != 0, the match is 
     somewhere later, so we've still failed */
-match(I, S) :- S == 0, I == [41].
-match([H|I], S) :- S >= 0, H == 40, match(I, S + 1).
-match([H|I], S) :- H == 41, match(I, S - 1).
-match([H|I], S) :- S >= 0, H \= 40, H \= 41, match(I, S).
+match(I, S) :-
+  S == 0,
+  I == [41]. %last letter must be ')'
+match([H|I], S) :-
+  S >= 0,
+  H == 40,
+  L is S + 1,
+  match(I, L).
+match([H|I], S) :-
+  S >= 0,
+  H == 41,
+  L is S - 1,
+  match(I, L).
+match([H|I], S) :-
+  S >= 0,
+  H \= 40,
+  H \= 41,
+  match(I, S).
 
 %0 or more repetitions
 /*  Star only applies to a single letter, or a paranthesised regular 
