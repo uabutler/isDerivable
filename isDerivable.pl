@@ -76,8 +76,10 @@ isDerivable(RegEx, Input) :-
 
 /*  Base case for a failure */
 notDerivable(RegEx, Input) :-
-  letter(RegEx),
-  RegEx \= Input.
+  (letter(RegEx),
+  RegEx \= Input);
+  (cat(RegEx, _, _),
+  Input == '').
 
 %parentheses
 /*  This looks more complicated than it actually is. Basically, it 
@@ -125,7 +127,7 @@ star(X, Y) :-
   atom_concat(Y, '*', X),
   paran(Y, _).
 
-%plus sign
+%disjunction
 /*  This ordering might seem strange, but is nessesary because of 
     Prolog's instantiation. Though it results in a brute force, We 
     need to use X in the first call, since it's the only variable 
@@ -135,7 +137,13 @@ dis(X, Y, Z) :-
   atom_concat(Y, '+', A),
   name(Y, B),
   gmatch(B, 0).
-
+/*  gmatch/2 is a more generalized verion (general_match) of the
+    match functor created above. It's not dependant on the last
+    character of the string being a ')' as was needed before. It
+    simply checks to make sure all parans that are opened are
+    closed in the string and are closed parans were opened in the
+    current string. The logic is the same as before, but with a
+    modified base case */
 gmatch(I, S) :-
   I == [],
   S == 0.
@@ -155,7 +163,7 @@ gmatch([H|I], S) :-
   H \= 41,
   gmatch(I, S).
 
-%letters next to each other
+%concatenation
 /*  This will concatenate a letter or parans to another letter or 
     parans. It will also concatenate a letter to the end of a
     closure */
