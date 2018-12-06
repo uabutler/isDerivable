@@ -56,7 +56,6 @@ isDerivable(RegEx, Input) :-
     the disjuntion, it passes. Otherwise, it fails. */
 isDerivable(RegEx, Input) :-
   not(notDerivable(RegEx, Input)),
-  not(paran(RegEx, _)),
   dis(RegEx, X, Y),
   (isDerivable(X, Input); isDerivable(Y, Input)).
 /*  This also involves a lot of brute forcing. If you can split the 
@@ -133,7 +132,29 @@ star(X, Y) :-
     that's been instantiated. */
 dis(X, Y, Z) :-
   atom_concat(A, Z, X),
-  atom_concat(Y, '+', A).
+  atom_concat(Y, '+', A),
+  name(Y, B),
+  gmatch(B, 0).
+
+gmatch(I, S) :-
+  I == [],
+  S == 0.
+gmatch([H|I], S) :-
+  S >= 0,
+  H == 40,
+  L is S + 1,
+  gmatch(I, L).
+gmatch([H|I], S) :-
+  S >= 0,
+  H == 41,
+  L is S - 1,
+  gmatch(I, L).
+gmatch([H|I], S) :-
+  S >= 0,
+  H \= 40,
+  H \= 41,
+  gmatch(I, S).
+
 %letters next to each other
 /*  This will concatenate a letter or parans to another letter or 
     parans. It will also concatenate a letter to the end of a
