@@ -67,6 +67,8 @@ isDerivable(RegEx, Input) :-
     very intensive on the part of the computer */
 isDerivable(RegEx, Input) :-
   not(notDerivable(RegEx, Input)),
+  not(paran(RegEx, _)),
+  not(dis(RegEx, _, _)),
   cat(RegEx, X, Y),
   atom_concat(A, B, Input),
   isDerivable(X, A),
