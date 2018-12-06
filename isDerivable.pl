@@ -58,6 +58,7 @@ isDerivable(RegEx, Input) :-
     the disjuntion, it passes. Otherwise, it fails. */
 isDerivable(RegEx, Input) :-
   not(notDerivable(RegEx, Input)),
+  not(paran(RegEx, _)),
   dis(RegEx, X, Y),
   (isDerivable(X, Input); isDerivable(Y, Input)).
 /*  This also involves a lot of brute forcing. If you can split the 
