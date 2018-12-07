@@ -1,14 +1,14 @@
-/* isDerivable   
+/* isDerivable
  * ===========
  * This program creates a functor, isDerivable/2, that takes two
  * arguments. The first argument is a regular expression, the second
  * is a string, both represented by atoms. If the string can be
- * derived from the regular expression, this functor returns true. 
+ * derived from the regular expression, this functor returns true.
  * Otherwise, it returns false.
  *
- * As a precondition, it is assumed the regular expression is valid, 
- * and that both the string and the regular expression are defined 
- * only over the alphabet A = {a,b,c}. (Though this can be trivially 
+ * As a precondition, it is assumed the regular expression is valid,
+ * and that both the string and the regular expression are defined
+ * only over the alphabet A = {a,b,c}. (Though this can be trivially
  * modified below.)
  *
  * For this program, A + B represents the disjuntion of two regular
@@ -25,7 +25,7 @@
  * Nestor Fong
  */
 
-/*  Base case, since the string will not contain '+' or paran, 
+/*  Base case, since the string will not contain '+' or paran,
     if this test is true, it means the regex itself is just a
     string */
 isDerivable(RegEx, Input) :-
@@ -47,16 +47,16 @@ isDerivable(RegEx, Input) :-
   A \= '',
   isDerivable(X, A),
   isDerivable(RegEx, B))).
-/*  This is simple, if you can derive the string from either part of 
+/*  This is simple, if you can derive the string from either part of
     the disjuntion, it passes. Otherwise, it fails. */
 isDerivable(RegEx, Input) :-
   not(notDerivable(RegEx, Input)),
   dis(RegEx, X, Y),
   (isDerivable(X, Input); isDerivable(Y, Input)).
-/*  This also involves a lot of brute forcing. If you can split the 
-    string and the regular expression up into two concatenated parts 
-    such that a part of a regular expression can derive its 
-    respective part of the string, it passes. Not complicated, but 
+/*  This also involves a lot of brute forcing. If you can split the
+    string and the regular expression up into two concatenated parts
+    such that a part of a regular expression can derive its
+    respective part of the string, it passes. Not complicated, but
     very intensive on the part of the computer. If the whole thing
     is surrounded by parans, or is a disjuntion, it can't be a
     disjunction. */
@@ -77,10 +77,10 @@ notDerivable(RegEx, Input) :-
   Input == '').
 
 %parentheses
-/*  This looks more complicated than it actually is. Basically, it 
-    strips paranthesis from boths sides if it can, and returns false 
-    if it can't. The match functor is there to ensure the paranthesis 
-    being stripped off of the end actually match eachother. ex. 
+/*  This looks more complicated than it actually is. Basically, it
+    strips paranthesis from boths sides if it can, and returns false
+    if it can't. The match functor is there to ensure the paranthesis
+    being stripped off of the end actually match eachother. ex.
     (a)(b) -/-> a)(b */
 paran(In, Out) :-
   atom_concat('(', A, In),
@@ -113,7 +113,7 @@ match([Head|In], Open) :-
   match(In, Open).
 
 %0 or more repetitions
-/*  Star only applies to a single letter, or a paranthesised regular 
+/*  Star only applies to a single letter, or a paranthesised regular
     expression */
 star(In, Out) :-
   atom_concat(Out, '*', In),
@@ -123,13 +123,13 @@ star(In, Out) :-
   paran(Out, _).
 
 %disjunction
-/*  This ordering might seem strange, but is nessesary because of 
-    Prolog's instantiation. Though it results in a brute force, We 
-    need to use X in the first call, since it's the only variable 
+/*  This ordering might seem strange, but is nessesary because of
+    Prolog's instantiation. Though it results in a brute force, We
+    need to use X in the first call, since it's the only variable
     that's been instantiated. */
 dis(In, Left, Right) :-
   atom_concat(A, Right, In),
-  atom_concat(Left, '+', A),
+  (atom_concat(Left, '+', A); atom_concat(Left, ' + ', A)),
   name(Right, List), gmatch(List, 0).
 /*  gmatch/2 is a more generalized verion (general_match) of the
     match functor created above. It's not dependant on the last
@@ -158,7 +158,7 @@ gmatch([Head|In], Open) :-
   gmatch(In, Open).
 
 %concatenation
-/*  This will concatenate a letter or parans to another letter or 
+/*  This will concatenate a letter or parans to another letter or
     parans. It will also concatenate a letter to the end of a
     closure */
 cat(In, Left, Right) :-
