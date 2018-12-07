@@ -62,7 +62,6 @@ isDerivable(RegEx, Input) :-
     disjunction. */
 isDerivable(RegEx, Input) :-
   not(notDerivable(RegEx, Input)),
-  not(paran(RegEx, _)),
   not(dis(RegEx, _, _)),
   cat(RegEx, X, Y),
   atom_concat(A, B, Input),
@@ -130,7 +129,7 @@ star(In, Out) :-
 dis(In, Left, Right) :-
   atom_concat(A, Right, In),
   (atom_concat(Left, '+', A); atom_concat(Left, ' + ', A)),
-  name(Right, List), gmatch(List, 0).
+  name(Left, List), gmatch(List, 0).
 /*  gmatch/2 is a more generalized verion (general_match) of the
     match functor created above. It's not dependant on the last
     character of the string being a ')' as was needed before. It
