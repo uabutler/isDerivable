@@ -14,7 +14,7 @@
  * For this program, A + B represents the disjuntion of two regular
  * expression, A and B, AB is the concatenation of A and B, and A*
  * is the closure of A. (A derives an expression repeated 0 or more 
- * times). Program will not account
+ * times). Program assumes no spaces are used.
  */
 
 /* Authors
@@ -35,7 +35,8 @@ isDerivable(RegEx, Input) :-
     which is enough to make the whole functor false */
 isDerivable(RegEx, Input) :-
   not(notDerivable(RegEx, Input)),
-  paran(RegEx, X), isDerivable(X, Input).
+  paran(RegEx, X),
+  isDerivable(X, Input).
 /*  This is the base case for star. If star is valid, regardless of
     the output, if the input is empty, the call passes. */
 isDerivable(RegEx, Input) :-
@@ -81,10 +82,10 @@ notDerivable(RegEx, Input) :-
     if it can't. The match functor is there to ensure the paranthesis 
     being stripped off of the end actually match eachother. ex. 
     (a)(b) -/-> a)(b */
-paran(X, Y) :-
-  atom_concat('(', A, X),
-  name(A, B), match(B, 0),
-  atom_concat(Y, ')', A).
+paran(In, Out) :-
+  atom_concat('(', A, In),
+  name(A, List), match(List, 0),
+  atom_concat(Out, ')', A).
 /*  This is accomplished by keeping track of the paranthesis we've 
     passed. At first, we've passed zero. As we progress through the 
     string, if we pass an opening paran, we add one, if we pass it's 
@@ -92,45 +93,44 @@ paran(X, Y) :-
     zero, we've passed a closing paran that wasn't opened, so we 
     return false. If we get to the end, and S != 0, the match is 
     somewhere later, so we've still failed */
-match(I, S) :-
-  S == 0,
-  I == [41]. %last letter must be ')'
-match([H|I], S) :-
-  S >= 0,
-  H == 40,
-  L is S + 1,
-  match(I, L).
-match([H|I], S) :-
-  S >= 0,
-  H == 41,
-  L is S - 1,
-  match(I, L).
-match([H|I], S) :-
-  S >= 0,
-  H \= 40,
-  H \= 41,
-  match(I, S).
+match(In, Open) :-
+  Open == 0,
+  In == [41]. %last letter must be ')'
+match([Head|In], Open) :-
+  Open >= 0,
+  Head == 40,
+  NOpen is Open + 1,
+  match(In, NOpen).
+match([Head|In], Open) :-
+  Open >= 0,
+  Head == 41,
+  NOpen is Open - 1,
+  match(In, NOpen).
+match([Head|In], Open) :-
+  Open >= 0,
+  Head \= 40,
+  Head \= 41,
+  match(In, Open).
 
 %0 or more repetitions
 /*  Star only applies to a single letter, or a paranthesised regular 
     expression */
-star(X, Y) :-
-  atom_concat(Y, '*', X),
-  letter(Y).
-star(X, Y) :-
-  atom_concat(Y, '*', X),
-  paran(Y, _).
+star(In, Out) :-
+  atom_concat(Out, '*', In),
+  letter(Out).
+star(In, Out) :-
+  atom_concat(Out, '*', In),
+  paran(Out, _).
 
 %disjunction
 /*  This ordering might seem strange, but is nessesary because of 
     Prolog's instantiation. Though it results in a brute force, We 
     need to use X in the first call, since it's the only variable 
     that's been instantiated. */
-dis(X, Y, Z) :-
-  atom_concat(A, Z, X),
-  atom_concat(Y, '+', A),
-  name(Y, B),
-  gmatch(B, 0).
+dis(In, Left, Right) :-
+  atom_concat(A, Right, In),
+  atom_concat(Left, '+', A),
+  name(Right, List), gmatch(List, 0).
 /*  gmatch/2 is a more generalized verion (general_match) of the
     match functor created above. It's not dependant on the last
     character of the string being a ')' as was needed before. It
@@ -138,38 +138,35 @@ dis(X, Y, Z) :-
     closed in the string and are closed parans were opened in the
     current string. The logic is the same as before, but with a
     modified base case */
-gmatch(I, S) :-
-  I == [],
-  S == 0.
-gmatch([H|I], S) :-
-  S >= 0,
-  H == 40,
-  L is S + 1,
-  gmatch(I, L).
-gmatch([H|I], S) :-
-  S >= 0,
-  H == 41,
-  L is S - 1,
-  gmatch(I, L).
-gmatch([H|I], S) :-
-  S >= 0,
-  H \= 40,
-  H \= 41,
-  gmatch(I, S).
+gmatch(In, Open) :-
+  In == [],
+  Open == 0.
+gmatch([Head|In], Open) :-
+  Open >= 0,
+  Head == 40,
+  NOpen is Open + 1,
+  gmatch(In, NOpen).
+gmatch([Head|In], Open) :-
+  Open >= 0,
+  Head == 41,
+  NOpen is Open - 1,
+  gmatch(In, NOpen).
+gmatch([Head|In], Open) :-
+  Open >= 0,
+  Head \= 40,
+  Head \= 41,
+  gmatch(In, Open).
 
 %concatenation
 /*  This will concatenate a letter or parans to another letter or 
     parans. It will also concatenate a letter to the end of a
     closure */
-
-cat(X, Y, Z) :-
-  atom_concat(Y, Z, X),
-  ((letter(C), atom_concat(_, C, Y)); atom_concat(_, ')', Y); atom_concat(_, '*', Y)),
-  ((letter(D), atom_concat(D, _, Z)); atom_concat('(', _, Z)),
-  name(Y, A),
-  name(Z, B),
-  gmatch(B, 0),
-  gmatch(A, 0).
+cat(In, Left, Right) :-
+  atom_concat(Left, Right, In),
+  ((letter(A), atom_concat(_, A, Left)); atom_concat(_, ')', Left); atom_concat(_, '*', Left)),
+  ((letter(B), atom_concat(B, _, Right)); atom_concat('(', _, Right)),
+  name(Left, C), name(Right, D),
+  gmatch(C, 0), gmatch(D, 0).
 
 %letters
 /* Base cases */
