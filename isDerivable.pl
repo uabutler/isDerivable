@@ -14,7 +14,7 @@
  * For this program, A + B represents the disjuntion of two regular
  * expression, A and B, AB is the concatenation of A and B, and A*
  * is the closure of A. (A derives an expression repeated 0 or more 
- * times).
+ * times). Program will not account
  */
 
 /* Authors
@@ -40,18 +40,12 @@ isDerivable(RegEx, Input) :-
     the output, if the input is empty, the call passes. */
 isDerivable(RegEx, Input) :-
   not(notDerivable(RegEx, Input)),
-  star(RegEx, _), Input == ''.
-/*  atom_concat will brute force combinations of strings to that can
-    concatenate to make Input. It will remove the star from the end
-    of RegEx if doing so is valid (applied over a letter or parans).
-    It will then test to see if the first part is derivable from the
-    part without the star, and sends the part with the star back
-    with the second half, until it gets to the base case. */
-isDerivable(RegEx, Input) :-
-  not(notDerivable(RegEx, Input)),
   star(RegEx, X),
-  atom_concat(A, B, Input),
-  isDerivable(X, A), isDerivable(RegEx, B).
+  ((Input == '');
+  (atom_concat(A, B, Input),
+  A \= '',
+  isDerivable(X, A),
+  isDerivable(RegEx, B))).
 /*  This is simple, if you can derive the string from either part of 
     the disjuntion, it passes. Otherwise, it fails. */
 isDerivable(RegEx, Input) :-
@@ -167,10 +161,15 @@ gmatch([H|I], S) :-
 /*  This will concatenate a letter or parans to another letter or 
     parans. It will also concatenate a letter to the end of a
     closure */
+
 cat(X, Y, Z) :-
   atom_concat(Y, Z, X),
-  ((letter(A), atom_concat(_, A, Y)); atom_concat(_, ')', Y); atom_concat(_, '*', Y)),
-  ((letter(B), atom_concat(B, _, Z)); atom_concat('(', _, Z)).
+  ((letter(C), atom_concat(_, C, Y)); atom_concat(_, ')', Y); atom_concat(_, '*', Y)),
+  ((letter(D), atom_concat(D, _, Z)); atom_concat('(', _, Z)),
+  name(Y, A),
+  name(Z, B),
+  gmatch(B, 0),
+  gmatch(A, 0).
 
 %letters
 /* Base cases */
