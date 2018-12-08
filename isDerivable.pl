@@ -62,7 +62,6 @@ isDerivable(RegEx, Input) :-
     disjunction. */
 isDerivable(RegEx, Input) :-
   not(notDerivable(RegEx, Input)),
-  not(dis(RegEx, _, _)),
   cat(RegEx, X, Y),
   atom_concat(A, B, Input),
   isDerivable(X, A),
