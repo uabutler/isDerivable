@@ -165,7 +165,8 @@ cat(In, Left, Right) :-
   ((letter(A), atom_concat(_, A, Left)); atom_concat(_, ')', Left); atom_concat(_, '*', Left)),
   ((letter(B), atom_concat(B, _, Right)); atom_concat('(', _, Right)),
   name(Left, C), name(Right, D),
-  gmatch(C, 0), gmatch(D, 0).
+  gmatch(C, 0), gmatch(D, 0),
+  not(dis(In, _, _)).
 
 %letters
 /* Base cases */
